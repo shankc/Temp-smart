@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="75dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    >
+
+    <ImageView
+        android:id="@+id/store_logo"
+        android:layout_centerVertical="true"
+        android:padding="4dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/item_Price"
+        android:textSize="15sp"
+        android:textColor="@android:color/black"
+        android:layout_alignTop="@+id/buy_button"
+        android:layout_centerHorizontal="true" />
+
+
+    <Button
+        android:id="@+id/buy_button"
+
+        android:text="Buy"
+        android:textColor="#FFF8F7"
+        android:textSize="14sp"
+        android:layout_width="75dp"
+        android:layout_height="25dp"
+        android:background="@drawable/buy_button_shape"
+        android:shadowColor="#11A83E"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="5"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true" />
+</RelativeLayout>
