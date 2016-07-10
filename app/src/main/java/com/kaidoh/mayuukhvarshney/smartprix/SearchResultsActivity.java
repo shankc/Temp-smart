@@ -135,6 +135,7 @@ public class SearchResultsActivity extends AppCompatActivity  {
     class SearchForQuery extends AsyncTask<Void,Void,Void>{
 
         String SearchVariable;
+        boolean ResultsAvailable=false;
 
         public SearchForQuery(String txt){
             this.SearchVariable= txt;
@@ -144,64 +145,85 @@ public class SearchResultsActivity extends AppCompatActivity  {
         protected Void doInBackground(Void... params) {
             //gett all the ids first=>
             SmartService connection = SmartConnection.getService();
-            HashMap<String,String> queries;
+            SmartService checkservice = SmartConnection.getService();
+            HashMap<String,String> queries=new HashMap<>();
+          queries.put("q",SearchVariable);
 
-
-            for(int i=0;i<200;i+=10)
-            {
-                queries= new HashMap<>();
-                queries.put("q",SearchVariable);
-                queries.put("start",String.valueOf((i)));
-                connection.getSearchResults(queries, new Callback<ProductDetail>() {
-                    @Override
-                    public void success(ProductDetail productDetail, Response response) {
-                        if(productDetail.getResponse().equals("SUCCESS")) {
-                            int listsize = productDetail.getResult().getProductResults().size();
-                            for (int i = 0; i < listsize; i++) {
-                                SearchIds.add(productDetail.getResult().getProductResults().get(i).getID());
-                                Log.d("SearchResultsActivity","the retured ids are "+SearchIds.get(i));
-                            }
-                            if (listsize != 0) {
-                                new FinalSearchResults().execute();
-                            }
-                            else{
-                                flag=true;
-                                prog.stopSpinning();
-                                prog.setVisibility(View.INVISIBLE);
-                                theContentList .setVisibility(View.VISIBLE);
-                                Toast.makeText(SearchResultsActivity.this,"No Results found!",Toast.LENGTH_SHORT).show();
-
-
-                            }
-                        }
-                        else
-                        {
-                            Log.d("SearchResults","Response is fail");
-                            prog.stopSpinning();
-                            prog.setVisibility(View.INVISIBLE);
-                            theContentList .setVisibility(View.VISIBLE);
-                            Toast.makeText(SearchResultsActivity.this,"No Results found!",Toast.LENGTH_SHORT).show();
-                            flag= true;
-                        }
+            checkservice.getSearchResults(queries, new Callback<ProductDetail>() {
+                @Override
+                public void success(ProductDetail productDetail, Response response) {
+                    if(productDetail.getResponse().equals("SUCCESS") && productDetail.getResult().getProductResults().size()!=0){
+                        ResultsAvailable= true;
+                        Log.d("SearchResultActivity","yes we can loop now ");
 
                     }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-                    Log.d("SearchResults","there was a problem "+error);
+                    else
+                    {
+                        ResultsAvailable=false;
                         prog.stopSpinning();
                         prog.setVisibility(View.INVISIBLE);
                         theContentList .setVisibility(View.VISIBLE);
+                        Toast.makeText(SearchResultsActivity.this,"No Results found!",Toast.LENGTH_SHORT).show();
+                        Log.d("SearchResultsActivity","Nope NO looping");
                     }
-                });
-
-                if(flag)
-                {
-                    break;
                 }
 
-            }
+                @Override
+                public void failure(RetrofitError error) {
+                    prog.stopSpinning();
+                    prog.setVisibility(View.INVISIBLE);
+                    theContentList .setVisibility(View.VISIBLE);
+                    Toast.makeText(SearchResultsActivity.this,"There was a Problem :(",Toast.LENGTH_SHORT).show();
+                    error.printStackTrace();
 
+                }
+            });
+
+            if(ResultsAvailable) {
+                for (int i = 0; i < 200; i += 10) {
+                    queries = new HashMap<>();
+                    queries.put("q", SearchVariable);
+                    queries.put("start", String.valueOf((i)));
+                    connection.getSearchResults(queries, new Callback<ProductDetail>() {
+                        @Override
+                        public void success(ProductDetail productDetail, Response response) {
+                            if (productDetail.getResponse().equals("SUCCESS")) {
+                                int listsize = productDetail.getResult().getProductResults().size();
+                                for (int i = 0; i < listsize; i++) {
+                                    SearchIds.add(productDetail.getResult().getProductResults().get(i).getID());
+                                    Log.d("SearchResultsActivity", "the retured ids are " + SearchIds.get(i));
+                                }
+                                if (listsize != 0) {
+                                    new FinalSearchResults().execute();
+                                } else {
+
+                                    prog.stopSpinning();
+                                    prog.setVisibility(View.INVISIBLE);
+                                    theContentList.setVisibility(View.VISIBLE);
+                                    Toast.makeText(SearchResultsActivity.this, "No Results found!", Toast.LENGTH_SHORT).show();
+
+
+                                }
+                            } else {
+                                Log.d("SearchResults", "Response is fail");
+
+
+                            }
+
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+                            Log.d("SearchResults", "there was a problem " + error);
+                            prog.stopSpinning();
+                            prog.setVisibility(View.INVISIBLE);
+                            theContentList.setVisibility(View.VISIBLE);
+                        }
+                    });
+
+
+                }
+            }
             return null;
         }
     }
